@@ -15,17 +15,15 @@ import json
 ##
 ## the starter code is here just to make the tests run (and fail)
 class NationalSite():
-    def __init__(self, type, name, desc, url=None):
-        self.type = type
+    def __init__(self, site_type, name, desc, address_street, address_city, address_state, address_zip, url=None):
+        self.type = site_type
         self.name = name
         self.description = desc
         self.url = url
-
-        # needs to be changed, obvi.
-        self.address_street = '123 Main St.'
-        self.address_city = 'Smallville'
-        self.address_state = 'KS'
-        self.address_zip = '11111'
+        self.address_street = address_street
+        self.address_city = address_city
+        self.address_state = address_state
+        self.address_zip = address_zip
 
     # NationalSite  class should have a __str__ method that returns a string of the following form: <name> (<type>): <address string>
     # Isle Royale (National Park): 800 East Lakeshore Drive, Houghton, MI 49931
@@ -49,26 +47,16 @@ class NearbyPlace():
 ##        for the state at nps.gov
 ## The function should return a list of NationalSite instances that are in that state.
 def get_sites_for_state(state_abbr):
-    ###################
-    #     CONFIG      #
-    ###################
-    cache_file = "nps.json"
-    site="nps"
-    topic=state_abbr
+    cache_file = "part1.json"
+    url_to_scrape = "https://www.nps.gov/state/{}/index.htm".format(state_abbr)
     cache = Cache(cache_file)
-    base = "https://www.nps.gov/state/{}/index.htm".format(state_abbr)
 
-    #######################
-    #     RUN PROGRAM     #
-    #######################
-    UID = create_id(site, topic)
-    response = cache.get(UID)
+    while cache.get(url_to_scrape) is None:
+        html_text = requests.get(url_to_scrape).text
+        cache.set(url_to_scrape, html_text, 1)
 
-    if response == None:
-        response = requests.get(base).text
-        cache.set(UID, response, 1)
 
-    soup = BeautifulSoup( response, 'html.parser')
+    soup = BeautifulSoup(cache.get(url_to_scrape), features='html.parser')
     parks = soup.find( id="list_parks").find_all(class_='clearfix')
 
     ### Information you should get for each National Site will include the site name, site type, and the physical (or mailing) address. 
@@ -88,17 +76,12 @@ def get_sites_for_state(state_abbr):
         address_state = soup_add.find(itemprop='addressRegion').text
         address_zip = soup_add.find(itemprop='postalCode').text
 
-        temp = [site_name, site_type, site_desc, address_street, address_city, address_state, address_zip]
-        national_park_list.append(temp)
-    for i in national_park_list:
-        print("""{},{},{},{},{},{},{}""".format( i[0], i[1], i[2], i[3], i[4], i[5], i[6]))
+        national_park_list.append(NationalSite(site_type, site_name, site_desc, address_street, address_city, address_state, address_zip))
+    return national_park_list
 
-def create_id(site, topic):
-    return "{}_{}_{}.json".format(site, topic, str(datetime.now()).replace(' ', ''))
-
-
-national_parks = get_sites_for_state("MI")
-
+nps_list = get_sites_for_state("MI")
+for i in nps_list:
+    print(i.__str__())
 
 
 ## Must return the list of NearbyPlaces for the specifite NationalSite
