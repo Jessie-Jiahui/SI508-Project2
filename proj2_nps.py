@@ -27,11 +27,6 @@ class NationalSite():
         self.address_state = 'KS'
         self.address_zip = '11111'
 
-    # NationalSite  class should have a __str__ method that returns a string of the following form: <name> (<type>): <address string>
-    # Isle Royale (National Park): 800 East Lakeshore Drive, Houghton, MI 49931
-    def __str__(self):
-        return '''{} ({}): {}, {}, {} {}'''.format(self.name, self.type, self.address_street, self.address_city, self.address_state, self.address_zip)
-
 ## you can, and should add to and modify this class any way you see fit
 ## you can add attributes and modify the __init__ parameters,
 ##   as long as tests still pass
@@ -50,58 +45,8 @@ class NearbyPlace():
 ## returns: all of the NationalSites
 ##        (e.g., National Parks, National Heritage Sites, etc.) that are listed
 ##        for the state at nps.gov
-## The function should return a list of NationalSite instances that are in that state.
 def get_sites_for_state(state_abbr):
-    ###################
-    #     CONFIG      #
-    ###################
-    cache_file = "nps.json"
-    site="nps"
-    topic=state_abbr
-    cache = Cache(cache_file)
-    base = "https://www.nps.gov/state/{}/index.htm".format(state_abbr)
-
-    #######################
-    #     RUN PROGRAM     #
-    #######################
-    UID = create_id(site, topic)
-    response = cache.get(UID)
-
-    if response == None:
-        response = requests.get(base).text
-        cache.set(UID, response, 1)
-
-    soup = BeautifulSoup( response, 'html.parser')
-    parks = soup.find( id="list_parks").find_all(class_='clearfix')
-
-    ### Information you should get for each National Site will include the site name, site type, and the physical (or mailing) address. 
-    national_park_list = []
-    for park in parks:
-        site_name = park.find('h3').text
-        site_type = park.find('h2').text
-        site_desc = park.find('p').text
-
-        address_url = park.find_all('a')[2].get('href')
-        response_add = requests.get(address_url).text
-        soup_add = BeautifulSoup( response_add, 'html.parser')
-        # site_address = soup_add.find(class_='physical-address')
-
-        address_street = soup_add.find(itemprop='streetAddress').text
-        address_city = soup_add.find(itemprop='addressLocality').text
-        address_state = soup_add.find(itemprop='addressRegion').text
-        address_zip = soup_add.find(itemprop='postalCode').text
-
-        temp = [site_name, site_type, site_desc, address_street, address_city, address_state, address_zip]
-        national_park_list.append(temp)
-    for i in national_park_list:
-        print("""{},{},{},{},{},{},{}""".format( i[0], i[1], i[2], i[3], i[4], i[5], i[6]))
-
-def create_id(site, topic):
-    return "{}_{}_{}.json".format(site, topic, str(datetime.now()).replace(' ', ''))
-
-
-national_parks = get_sites_for_state("MI")
-
+    return []
 
 
 ### Part 2 ###
