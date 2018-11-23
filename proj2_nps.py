@@ -50,7 +50,7 @@ class NearbyPlace():
     def __str__(self):
         return self.name
 
-
+      
 ## Must return the list of NationalSites for the specified state
 ## param: the 2-letter state abbreviation, lowercase
 ##        (OK to make it work for uppercase too)
@@ -70,6 +70,7 @@ def get_sites_for_state(state_abbr):
 
     soup = BeautifulSoup(cache.get(url_to_scrape), features='html.parser')
     parks = soup.find( id="list_parks").find_all(class_='clearfix')
+    
 
     ### Information you should get for each National Site will include the site name, site type, and the physical (or mailing) address. 
     national_park_list = []
@@ -157,6 +158,31 @@ def get_nearby_places_for_site(national_site):
     nearby_result_list = response["results"]
 
     nearby_list = []
+=======
+
+    ### Information you should get for each National Site will include the site name, site type, and the physical (or mailing) address. 
+    national_park_list = []
+    for park in parks:
+        site_name = park.find('h3').text
+        site_type = park.find('h2').text
+        site_desc = park.find('p').text
+
+        address_url = park.find_all('a')[2].get('href')
+        response_add = requests.get(address_url).text
+        soup_add = BeautifulSoup( response_add, 'html.parser')
+        # site_address = soup_add.find(class_='physical-address')
+
+        address_street = soup_add.find(itemprop='streetAddress').text
+        address_city = soup_add.find(itemprop='addressLocality').text
+        address_state = soup_add.find(itemprop='addressRegion').text
+        address_zip = soup_add.find(itemprop='postalCode').text
+
+        national_park_list.append(NationalSite(site_type, site_name, site_desc, address_street, address_city, address_state, address_zip))
+    return national_park_list
+
+nps_list = get_sites_for_state("MI")
+for i in nps_list:
+    print(i.__str__())
 
     for nearby in nearby_result_list:
         name = nearby["name"]
@@ -170,6 +196,7 @@ def get_nearby_places_for_site(national_site):
 national_site = nps_list[0]
 # get_location_for_site(national_site)
 # get_nearby_places_for_site(national_site)
+
 
 ## Must plot all of the NationalSites listed for the state on nps.gov
 ## Note that some NationalSites might actually be located outside the state.
