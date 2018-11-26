@@ -26,10 +26,10 @@ class NationalSite():
         self.name = name
         self.description = desc
         self.url = url
-        self.address_street = address_street
+        self.address_street = address_street.replace("\n", "")
         self.address_city = address_city
         self.address_state = address_state
-        self.address_zip = address_zip
+        self.address_zip = address_zip.replace(" ", "")
 
     # NationalSite  class should have a __str__ method that returns a string of the following form: <name> (<type>): <address string>
     # Isle Royale (National Park): 800 East Lakeshore Drive, Houghton, MI 49931
@@ -249,7 +249,7 @@ def plot_sites_for_state(state_abbr):
         )
 
     fig = dict( data=data, layout=layout )
-    py.iplot( fig, validate=False, filename='national - sites' )
+    py.plot( fig, validate=False, filename='national - sites' )
 
 
 # plot_sites_for_state("MI")
@@ -349,42 +349,103 @@ def plot_nearby_for_site(site_object):
         )
 
     fig = dict( data=data, layout=layout )
-    py.iplot( fig, validate=False, filename='nearby - sites' )
+    py.plot( fig, validate=False, filename='nearby - sites' )
 
 # plot_nearby_for_site(national_site)
 
 
-user_input = input("Here are the commands you can order:\nlist <stateabbr> — e.g. list MI\nnearby <result_number> — e.g. nearby 2\nmap\nexit\nhelp\n\nPlease input your command:")
+def main():
+    print("Here are the commands you can order:")
+    print("--list <stateabbr>")
+    print("--exit")
+    print("--help")
 
-if user_input[0:4] == "list":
-    state = user_input.split(" ")[1]
-    national_parks = get_sites_for_state(state)
+    user_input = input("Please give your order:")
 
-    for park in national_parks:
-        print("{}) {}".format(national_parks.index(park)+1, park.name))
+    if user_input[0:4].lower() == "list":
+        global main_state
+        main_state = user_input.split(" ")[1]
+        global main_national_parks
+        main_national_parks = get_sites_for_state(main_state)
 
-    user_input1 = input("")
-    if user_input1 == "exit":
+        for park in main_national_parks:
+            print("{}) {}".format(main_national_parks.index(park)+1, park.name))
+
+        main_second()
+
+    elif user_input == "exit":
         exit()
 
-    elif user_input1 == "map":
-        plot_sites_for_state(state)
+    elif user_input == "help":
+        print("list <stateabbr>: e.g. list MI")
+        print("exit: exit the program")
+        main()
 
-        if user_input1 == "exit":
-            exit()
-    elif user_input1[0:6] == "nearby":
-        index = int(user_input1.split(" ")[1])
-        national_park = national_parks[index]
+    else:
+        print("Invalid input, try again\n\n")
+        main()
+
+def main_second():
+    print("Here are the commands you can order:")
+    print("--nearby <index>")
+    print("--map")
+    print("--exit")
+    print("--help")
+
+    user_input = input("\nPlease give your order:")
+
+    if user_input[0:6].lower() == "nearby":
+        global main_second_index
+        main_second_index = int(user_input.split(" ")[1])
+        national_park = main_national_parks[main_second_index]
         nearby_sites_list = get_nearby_places_for_site(national_park)
 
         for nearby_site in nearby_sites_list:
             print("{}) {}".format(nearby_sites_list.index(nearby_site)+1, nearby_site))
 
-        user_input2 = input("")
-        if user_input2 == "map":
-            plot_nearby_for_site(national_parks[index])
-        if user_input1 == "exit":
-            exit()
+        main_third()
+
+    elif user_input == "map":
+        plot_sites_for_state(main_state)
+
+    elif user_input == "exit":
+        exit()
+        main_second()
+
+    elif user_input == "help":
+        print("nearby <index>: e.g. nearby 1")
+        print("map: show the map of all national parks in the state")
+        print("exit: exit the program")
+        main_second()
+
+    else:
+        print("Invalid input, try again\n\n")
+        main_second()
 
 
+def main_third():
+    print("Here are the commands you can order:")
+    print("--map")
+    print("--exit")
+    print("--help")
+
+    user_input = input("\nPlease give your order:")
+
+    if user_input == "map":
+        plot_nearby_for_site(main_national_parks[main_second_index])
+        main_third()
+
+    elif user_input == "exit":
+        exit()
+
+    elif user_input == "help":
+        print("map: show the map of all nearby stores of the national park")
+        print("exit: exit the program")
+        main_third()
+
+    else:
+        print("Invalid input, try again\n\n")
+        main_third()
+
+main()
 
